@@ -22,7 +22,7 @@ namespace PlaywrightTests.Tests.UI
             await loginPage.LoginAsync("test", "test");
             string welcomeText = await loginPage.GetWelcomeMessageAsync();
             Assert.That(welcomeText, Does.Contain("test"), "Користувач не залогінився!");
-                
+            await Page.WaitForTimeoutAsync(3000);    
             Logger.Info("Тест успішно пройдено!");
         }
     }
