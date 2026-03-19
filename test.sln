@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lab6", "lab6", "{FE419569-34BD-A297-0061-7CE104D9F34C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaywrightTests", "lab6\PlaywrightTests\PlaywrightTests.csproj", "{0CD15057-2F10-4459-D4CC-81A0E0DBF0DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0CD15057-2F10-4459-D4CC-81A0E0DBF0DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CD15057-2F10-4459-D4CC-81A0E0DBF0DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CD15057-2F10-4459-D4CC-81A0E0DBF0DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CD15057-2F10-4459-D4CC-81A0E0DBF0DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0CD15057-2F10-4459-D4CC-81A0E0DBF0DA} = {FE419569-34BD-A297-0061-7CE104D9F34C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {45C2FF14-2273-4248-BAB1-89F74385F4D2}
+	EndGlobalSection
+EndGlobal
