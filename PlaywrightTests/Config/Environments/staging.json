@@ -1,0 +1,15 @@
+{
+  "Environment": "staging",
+  "BaseUrl": "https://staging.demoblaze.com",
+  "ApiUrl": "https://api-staging.example.com",
+  "Credentials": {
+    "Username": "staginguser",
+    "Password": "stagingpass123"
+  },
+  "Features": {
+    "DebugMode": false,
+    "SlowMode": false,
+    "ScreenshotsOnFailure": true,
+    "VideosOnFailure": false
+  }
+}

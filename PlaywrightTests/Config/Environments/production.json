@@ -1,0 +1,15 @@
+{
+  "Environment": "production",
+  "BaseUrl": "https://example.com",
+  "ApiUrl": "https://api.example.com",
+  "Credentials": {
+    "Username": "${PROD_USERNAME}",
+    "Password": "${PROD_PASSWORD}"
+  },
+  "Features": {
+    "DebugMode": false,
+    "SlowMode": false,
+    "ScreenshotsOnFailure": true,
+    "VideosOnFailure": false
+  }
+}

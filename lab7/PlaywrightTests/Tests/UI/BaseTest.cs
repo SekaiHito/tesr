@@ -1,48 +1,127 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
 using NUnit.Framework;
+using Serilog;
 using PlaywrightTests.Config;
-using PlaywrightTests.Utils;
+using PlaywrightTests.Core.Managers;
 
 namespace PlaywrightTests.Tests.UI
 {
+    /// <summary>
+    /// Base test class for all UI tests.
+    /// Handles browser initialization, page setup, and teardown with logging.
+    /// </summary>
     public class BaseTest
     {
-        protected IPlaywright PlaywrightInstance;
-        protected IBrowser Browser;
         protected IPage Page;
+        protected BrowserManager BrowserManager;
+        protected ILogger Logger;
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
+        {
+            // Initialize logger once for all tests
+            LoggerManager.Initialize(ConfigManager.Logging.MinimumLevel);
+            Logger = LoggerManager.Logger;
+
+            // Initialize Allure reporting
+            AllureHelper.Initialize(Logger);
+
+            Logger.Information("==== Test Execution Started ====");
+            Logger.Information("Environment: {Environment}", System.Environment.GetEnvironmentVariable("TEST_ENV") ?? "dev");
+            Logger.Information("Browser: {Browser}", ConfigManager.Environment.Browser);
+            Logger.Information("Headless: {Headless}", ConfigManager.Environment.Headless);
+        }
 
         [SetUp]
         public async Task Setup()
         {
-            Logger.Info("Ініціалізація тестового середовища...");
-            PlaywrightInstance = await Playwright.CreateAsync();
+            Logger.Information("Test Setup: {TestName}", TestContext.CurrentContext.Test.Name);
 
-            var launchOptions = new BrowserTypeLaunchOptions 
-            { 
-                Headless = ConfigManager.Settings.Headless 
-            };
-
-            Browser = ConfigManager.Settings.Browser.ToLower() switch
+            try
             {
-                "firefox" => await PlaywrightInstance.Firefox.LaunchAsync(launchOptions),
-                "webkit" => await PlaywrightInstance.Webkit.LaunchAsync(launchOptions),
-                _ => await PlaywrightInstance.Chromium.LaunchAsync(launchOptions)
-            };
+                // Initialize browser manager
+                var launchOptions = new BrowserTypeLaunchOptions
+                {
+                    Headless = ConfigManager.Environment.Headless,
+                    Args = ConfigManager.Playwright.LaunchArgs.ToArray()
+                };
 
-            Page = await Browser.NewPageAsync();
-            Page.SetDefaultTimeout(ConfigManager.Settings.Timeout);
+                BrowserManager = new BrowserManager(Logger, launchOptions);
+
+                // Parse browser type
+                var browserType = ConfigManager.Environment.Browser.ToLower() switch
+                {
+                    "firefox" => PlaywrightTests.Core.Managers.BrowserType.Firefox,
+                    "webkit" => PlaywrightTests.Core.Managers.BrowserType.WebKit,
+                    _ => PlaywrightTests.Core.Managers.BrowserType.Chromium
+                };
+
+                await BrowserManager.InitializeBrowserAsync(browserType);
+                Page = BrowserManager.Page;
+
+                // Set page timeout
+                Page.SetDefaultTimeout(ConfigManager.Playwright.Timeout);
+
+                Logger.Information("Test Setup completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Test Setup failed");
+                throw;
+            }
         }
 
         [TearDown]
         public async Task Teardown()
         {
-            Logger.Info("Завершення тесту і закриття браузера...");
-            if (Browser != null)
+            Logger.Information("Test Teardown: {TestName}", TestContext.CurrentContext.Test.Name);
+
+            try
             {
-                await Browser.CloseAsync();
+                // Check test result
+                if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Failed)
+                {
+                    Logger.Error("Test Failed: {TestName}", TestContext.CurrentContext.Test.Name);
+
+                    // Take screenshot on failure
+                    if (ConfigManager.TestData.Screenshots && Page != null)
+                    {
+                        string screenshotDir = "Screenshots";
+                        if (!System.IO.Directory.Exists(screenshotDir))
+                            System.IO.Directory.CreateDirectory(screenshotDir);
+
+                        string fileName = $"{screenshotDir}/{TestContext.CurrentContext.Test.Name}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss_fff}.png";
+                        await Page.ScreenshotAsync(new PageScreenshotOptions { Path = fileName, FullPage = true });
+                        Logger.Warning("Screenshot saved: {FileName}", fileName);
+                    }
+                }
+                else
+                {
+                    Logger.Information("Test Passed: {TestName}", TestContext.CurrentContext.Test.Name);
+                }
+
+                // Close browser
+                if (BrowserManager != null)
+                {
+                    await BrowserManager.CloseBrowserAsync();
+                    await BrowserManager.DisposeAsync();
+                }
+
+                Logger.Information("Test Teardown completed");
             }
-            PlaywrightInstance?.Dispose();
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error during test teardown");
+            }
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTeardown()
+        {
+            Logger.Information("==== Test Execution Completed ====");
+            LoggerManager.Shutdown();
         }
     }
 }
