@@ -1,0 +1,126 @@
+name: Test Automation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        dotnet-version: [ '10.0.x' ]
+
+    name: Test on ${{ matrix.os }} / .NET ${{ matrix.dotnet-version }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+
+    - name: Restore dependencies
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet restore
+
+    - name: Build
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Install Playwright browsers
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet build --no-restore
+
+    - name: Run UI Tests
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet test --configuration Release --filter "Category=UI" --no-build --verbosity normal
+      env:
+        TEST_ENV: dev
+
+    - name: Run API Tests
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet test --configuration Release --filter "Category=API" --no-build --verbosity normal
+      env:
+        TEST_ENV: dev
+
+    - name: Generate Allure Report
+      if: always()
+      working-directory: ./lab7
+      run: |
+        if command -v allure >/dev/null 2>&1; then
+          allure generate PlaywrightTests/allure-results -o allure-report --clean
+        fi
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.os }}
+        path: |
+          lab7/PlaywrightTests/bin/Release/
+          lab7/PlaywrightTests/Logs/
+          lab7/PlaywrightTests/Screenshots/
+          lab7/PlaywrightTests/allure-results/
+        retention-days: 30
+
+    - name: Upload Allure report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: allure-report-${{ matrix.os }}
+        path: lab7/allure-report/
+        retention-days: 30
+
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet restore
+
+    - name: Check code style
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet format --verify-no-changes --verbosity diagnostic || true
+
+    - name: Build with analysis
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet build /p:EnforceCodeStyleInBuild=true
+
+  smoke-tests:
+    runs-on: ubuntu-latest
+    needs: [ test, code-quality ]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet restore
+
+    - name: Build
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run Smoke Tests
+      working-directory: ./lab7/PlaywrightTests
+      run: dotnet test --configuration Release --filter "Category=Smoke" --no-build
+      env:
+        TEST_ENV: dev

@@ -1,0 +1,408 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║         PlaywrightTests Framework - Complete Usage Guide                      ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 1: ONE-TIME SETUP (First Time Only)                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Step 1: Navigate to framework
+$ cd /path/to/lab7
+
+Step 2: Make script executable
+$ chmod +x setup.sh
+
+Step 3: Run setup (Arch Linux)
+$ bash setup.sh --setup
+
+This will:
+  ✓ Check .NET SDK installation
+  ✓ Create required directories (Logs, Screenshots, etc.)
+  ✓ Restore NuGet packages
+  ✓ Build the project
+  ✓ Download Playwright browser binaries
+
+Expected output:
+  "Setup completed successfully"
+
+Step 4: Verify installation
+$ make test-smoke
+
+Expected output:
+  Tests: 2 passed
+  Time: ~30 seconds
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 2: RUN EXISTING TESTS                                               ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+OPTION A: Run all tests
+$ make test
+
+OPTION B: Run quick tests only (Smoke)
+$ make test-smoke
+Expected Time: ~5 minutes
+
+OPTION C: Run by type
+$ make test-ui      # UI tests only
+$ make test-api     # API tests only
+
+OPTION D: Run in parallel (Faster)
+$ make test-parallel
+
+OPTION E: Run specific test
+$ dotnet test --filter "Name~LoginTest"
+$ dotnet test --filter "Name~UserCanLogin"
+
+OPTION F: Run with debug output
+$ dotnet test --verbosity detailed
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 3: VIEW TEST RESULTS                                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+OPTION A: View Allure report (Beautiful HTML)
+$ make report-open
+
+This will:
+  ✓ Generate Allure report from test results
+  ✓ Open in default browser
+  ✓ Show test timeline, results, screenshots, etc.
+
+OPTION B: View test logs
+$ tail -f PlaywrightTests/Logs/test-*.log
+
+OPTION C: View screenshots of failures
+$ ls PlaywrightTests/Screenshots/
+$ open PlaywrightTests/Screenshots/error_screenshot_*.png
+
+OPTION D: View console output
+$ dotnet test --verbosity normal
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 4: CREATE YOUR FIRST TEST                                           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Step 1: Create UI Test File
+File: PlaywrightTests/Tests/UI/MyFirstTest.cs
+
+Content:
+┌────────────────────────────────────────────────────────────────────────┐
+│ using System.Threading.Tasks;                                          │
+│ using NUnit.Framework;                                                 │
+│ using Allure.NUnit.Attributes;                                         │
+│ using PlaywrightTests.Pages;                                           │
+│ using PlaywrightTests.Config;                                          │
+│                                                                        │
+│ namespace PlaywrightTests.Tests.UI                                     │
+│ {                                                                      │
+│     [TestFixture]                                                      │
+│     [AllureSuite("My Tests")]                                          │
+│     [AllureFeature("My Feature")]                                      │
+│     public class MyFirstTest : BaseTest                                │
+│     {                                                                  │
+│         [Test]                                                         │
+│         [Category("Smoke")]                                            │
+│         public async Task UserCanNavigateToHome()                      │
+│         {                                                              │
+│             // Arrange                                                 │
+│             var home = new HomePage(Page, Logger);                    │
+│                                                                        │
+│             // Act                                                     │
+│             await home.NavigateAsync(                                  │
+│                 ConfigManager.Environment.BaseUrl);                    │
+│                                                                        │
+│             // Assert                                                  │
+│             await home.VerifyHomePageLoadedAsync();                    │
+│         }                                                              │
+│     }                                                                  │
+│ }                                                                      │
+└────────────────────────────────────────────────────────────────────────┘
+
+Step 2: Run your test
+$ dotnet test --filter "Name~MyFirstTest"
+
+Step 3: View results
+$ make report-open
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 5: CREATE PAGE OBJECT                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Step 1: Create Page File
+File: PlaywrightTests/Pages/MyPage.cs
+
+Content:
+┌────────────────────────────────────────────────────────────────────────┐
+│ using System.Threading.Tasks;                                          │
+│ using Microsoft.Playwright;                                            │
+│ using Serilog;                                                         │
+│ using PlaywrightTests.Core.Pages;                                      │
+│                                                                        │
+│ namespace PlaywrightTests.Pages                                        │
+│ {                                                                      │
+│     public class MyPage : BasePage                                     │
+│     {                                                                  │
+│         // Define selectors (customize for your app)                   │
+│         private readonly string _submitButton = "button#submit";       │
+│         private readonly string _inputField = "input[name='email']";   │
+│                                                                        │
+│         public MyPage(IPage page, ILogger logger)                      │
+│             : base(page, logger) { }                                   │
+│                                                                        │
+│         public async Task EnterEmailAsync(string email)                │
+│         {                                                              │
+│             _logger.Information("Entering email");                     │
+│             await FillAsync(_inputField, email);                       │
+│         }                                                              │
+│                                                                        │
+│         public async Task SubmitAsync()                                │
+│         {                                                              │
+│             _logger.Information("Clicking submit");                    │
+│             await ClickAsync(_submitButton);                           │
+│         }                                                              │
+│     }                                                                  │
+│ }                                                                      │
+└────────────────────────────────────────────────────────────────────────┘
+
+Step 2: Use in test
+var page = new MyPage(Page, Logger);
+await page.EnterEmailAsync("test@example.com");
+await page.SubmitAsync();
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 6: CHANGE CONFIGURATION                                            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+CHANGE ENVIRONMENT:
+$ TEST_ENV=dev make test      # Development
+$ TEST_ENV=staging make test  # Staging
+$ TEST_ENV=production make test  # Production
+
+CHANGE BROWSER:
+$ export PLAYWRIGHT_BROWSER=chromium  # Default
+$ export PLAYWRIGHT_BROWSER=firefox
+$ export PLAYWRIGHT_BROWSER=webkit
+
+DEBUG MODE (See browser):
+$ export PLAYWRIGHT_HEADLESS=false
+$ make test
+
+EDIT CONFIGURATION:
+File: PlaywrightTests/appsettings.json
+
+Key Settings:
+  Timeout             - How long to wait for elements
+  HeadlessMode        - Run without UI
+  BrowserType         - chromium, firefox, webkit
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 7: COMMON MAKEFILE COMMANDS                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Setup & Build:
+$ make setup          # Full one-time setup
+$ make build          # Build project
+$ make clean          # Clean build artifacts
+$ make clean-all      # Deep clean (including logs)
+
+Testing:
+$ make test           # All tests
+$ make test-ui        # UI tests
+$ make test-api       # API tests
+$ make test-smoke     # Quick tests
+$ make test-parallel  # Parallel execution
+
+Code Quality:
+$ make format         # Format code
+$ make lint           # Run code analysis
+
+Reporting:
+$ make report         # Generate Allure report
+$ make report-open    # Generate & open report
+
+Help:
+$ make help           # Show all commands
+$ make all            # Full workflow (setup→build→test→report)
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 8: DEBUGGING & TROUBLESHOOTING                                      ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+View Test Logs (Real-time):
+$ tail -f PlaywrightTests/Logs/test-*.log
+
+View Error Screenshots:
+$ ls PlaywrightTests/Screenshots/
+
+Search for Errors:
+$ grep -i error PlaywrightTests/Logs/test-*.log
+
+Run Single Test with Details:
+$ dotnet test --filter "Name~TestName" --verbosity detailed
+
+Enable Debug Logging:
+Edit: PlaywrightTests/appsettings.json
+Change: "MinimumLevel": "Debug"
+
+PROBLEM: Tests timeout
+FIX: Increase timeout in appsettings.json
+
+PROBLEM: Browser won't launch
+FIX: rm -rf ~/.cache/ms-playwright && dotnet build
+
+PROBLEM: Element not found
+FIX: Check selector using browser DevTools
+
+PROBLEM: Flaky tests
+FIX: Use explicit waits, avoid Task.Delay()
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 9: EXAMPLE WORKFLOW                                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+DAY 1: Initial Setup
+$ cd lab7
+$ bash setup.sh --setup
+$ make test-smoke
+$ make report-open
+✓ Framework ready!
+
+DAY 2: Write First Test
+$ vim PlaywrightTests/Tests/UI/MyTest.cs
+$ dotnet test --filter "Name~MyTest"
+$ tail -f PlaywrightTests/Logs/test-*.log
+$ make report-open
+
+DAY 3: Create Page Object
+$ vim PlaywrightTests/Pages/MyPage.cs
+$ vim PlaywrightTests/Tests/UI/MyTest.cs  (use MyPage)
+$ make test
+$ make report-open
+
+DAY 4: Run Full Test Suite
+$ make all              # Setup → build → test → report
+✓ All tests pass!
+
+ONGOING: Daily Development
+$ make test-smoke       # Quick validation
+$ make format           # Format code
+$ make lint             # Check quality
+$ make all              # Full workflow
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 10: DIRECTORY STRUCTURE REFERENCE                                   ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Where to find things:
+
+Your Tests Go Here:
+  📁 PlaywrightTests/Tests/UI/          - UI tests
+  📁 PlaywrightTests/Tests/API/         - API tests
+
+Your Page Objects Go Here:
+  📁 PlaywrightTests/Pages/             - Page objects
+
+View Test Results Here:
+  📁 PlaywrightTests/Logs/              - Test logs
+  📁 PlaywrightTests/Screenshots/       - Error screenshots
+  📁 PlaywrightTests/allure-results/    - Raw test data
+  📁 allure-report/                     - HTML report
+
+Configuration Here:
+  📄 PlaywrightTests/appsettings.json   - Main config
+  📁 PlaywrightTests/Config/Environments/ - Env configs
+
+Build Files Here:
+  📄 Makefile                           - Make commands
+  📄 setup.sh                           - Bootstrap script
+  📄 PlaywrightTests.csproj            - Project file
+
+Documentation Here:
+  📄 README.md                          - Main guide
+  📄 HOW_TO_USE.md                      - This guide
+  📄 QUICK_REFERENCE.md                 - Cheat sheet
+  📁 docs/                              - Detailed docs
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 11: QUICK REFERENCE TABLE                                           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Page Object Methods:
+  await page.NavigateAsync(url)           - Go to URL
+  await page.ClickAsync(selector)         - Click element
+  await page.FillAsync(selector, text)    - Enter text
+  await page.GetTextAsync(selector)       - Get text
+  await page.WaitForElementVisibleAsync() - Wait for visible
+
+Test Assertions:
+  Assert.That(value, Is.EqualTo(expected))
+  Assert.That(value, Is.True)
+  Assert.That(value, Does.Contain(text))
+  Assert.That(value, Is.GreaterThan(0))
+
+Logging:
+  Logger.Information("message")
+  Logger.Warning("warning")
+  Logger.Error(ex, "error with {param}", param)
+
+Test Attributes:
+  [Test]                  - Marks as test method
+  [Category("Smoke")]     - Test category
+  [Retry(3)]              - Retry if fails
+  [AllureFeature("Name")] - Allure metadata
+  [AllureTag("Tag")]      - Allure tag
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SECTION 12: NEED HELP?                                                      ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📚 Documentation:
+  README.md              - Overview & features
+  HOW_TO_USE.md         - Detailed usage guide
+  QUICK_REFERENCE.md    - Cheat sheet
+  docs/SETUP.md         - Setup instructions
+  docs/ARCHITECTURE.md  - System design
+  docs/API.md           - API testing guide
+  docs/BEST_PRACTICES.md - Best practices
+  CONTRIBUTING.md       - Code standards
+
+⌨️  Command Help:
+  make help             - Show all make targets
+  bash setup.sh --help  - Show setup options
+
+📋 Examples:
+  PlaywrightTests/Tests/UI/LoginTest.cs    - UI test example
+  PlaywrightTests/Tests/API/ProductApiTest.cs - API test example
+  PlaywrightTests/Pages/LoginPage.cs       - Page object example
+
+📊 Logging:
+  PlaywrightTests/Logs/test-*.log - Test logs
+
+🖼️  Screenshots:
+  PlaywrightTests/Screenshots/    - Error screenshots
+
+📈 Reports:
+  make report-open              - Open Allure report
+
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║                     HAPPY TESTING! 🚀                                         ║
+║                                                                                ║
+║  For more information, see README.md or run: make help                        ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝

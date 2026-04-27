@@ -1,0 +1,76 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# .NET
+bin/
+obj/
+.vs/
+.vscode/
+*.sln.iml
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.pfx
+*.epk
+
+# Test Results
+TestResults/
+*.trx
+*.coverage
+coverage-results/
+
+# Screenshots and Logs
+Screenshots/
+Logs/
+*.log
+
+# Allure
+allure-results/
+allure-report/
+.allure/
+
+# Environment
+.env
+.env.local
+.env.*.local
+env/
+venv/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+thumbs.db
+
+# OS specific
+Thumbs.db
+.DS_Store
+*.tmp
+*.bak
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+
+# ReSharper
+.resharper
+*.resharper
+*.resharper.user
+
+# CodeRush
+.codyrush
+
+# Rider
+.idea/
+*.sln.iml
+
+# Coverage
+OpenCover/
