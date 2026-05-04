@@ -74,3 +74,4 @@ Thumbs.db
 
 # Coverage
 OpenCover/
+.playwright-browsers/

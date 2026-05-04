@@ -124,7 +124,11 @@ lint: .check-project
 report:
 	@echo "$(BLUE)Generating Allure report...$(NC)"
 	@if [ -d "$(ALLURE_RESULTS_DIR)" ]; then \
-		allure generate $(ALLURE_RESULTS_DIR) -o $(ALLURE_REPORT_DIR) --clean; \
+		if [ ! -x "$(PROJECT_DIR)/node_modules/.bin/allure" ]; then \
+			echo "$(YELLOW)⚠ Run \`cd $(PROJECT_DIR) && npm install\` first (Allure Report CLI).$(NC)"; \
+			exit 1; \
+		fi; \
+		cd $(PROJECT_DIR) && ./node_modules/.bin/allure generate allure-results -o allure-report --clean; \
 		echo "$(GREEN)✓ Report generated in $(ALLURE_REPORT_DIR)$(NC)"; \
 	else \
 		echo "$(YELLOW)⚠ No test results found in $(ALLURE_RESULTS_DIR)$(NC)"; \
@@ -132,11 +136,8 @@ report:
 
 report-open: report
 	@echo "$(BLUE)Opening Allure report...$(NC)"
-	@if command -v allure >/dev/null 2>&1; then \
-		allure open $(ALLURE_REPORT_DIR); \
-	else \
-		echo "$(YELLOW)⚠ Allure CLI not available. Open $(ALLURE_REPORT_DIR)/index.html manually$(NC)"; \
-	fi
+	@cd $(PROJECT_DIR) && ./node_modules/.bin/allure open allure-report || \
+		echo "$(YELLOW)⚠ Open $(ALLURE_REPORT_DIR)/index.html in a browser$(NC)"
 
 setup:
 	@echo "$(BLUE)Running full setup...$(NC)"

@@ -61,6 +61,7 @@ Configuration
 ## 📦 Prerequisites
 
 - **.NET 10.0 SDK** or higher
+- **Node.js** (for the local Allure CLI via `npx`; optional if you install Allure Report another way)
 - **Windows, Linux, or macOS**
 - **4GB RAM** (minimum)
 - **2GB disk space**
@@ -83,7 +84,19 @@ Configuration
    dotnet playwright install
    ```
 
-4. **Build the project:**
+4. **Install Allure Report CLI (project-local, no sudo):**
+   ```bash
+   npm install
+   ```
+   This installs `allure-commandline` into `node_modules`. Use `npx allure …` as shown below.  
+   **Do not** use `pacman -S allure` on Arch: that package is an unrelated game, not Allure Report.  
+   If you prefer a global install, use a user-writable prefix (avoids `EACCES` on `/usr/lib/node_modules`):
+   ```bash
+   npm install -g allure-commandline --prefix ~/.local
+   ```
+   Then ensure `~/.local/bin` is on your `PATH`.
+
+5. **Build the project:**
    ```bash
    dotnet build
    ```
@@ -114,9 +127,9 @@ dotnet test --filter "Category=Smoke"
 # Run in parallel
 dotnet test -- --workers=4
 
-# Generate Allure report
-allure generate allure-results -o allure-report -c
-allure open allure-report
+# Generate Allure report (after npm install in this folder)
+npx allure generate allure-results -o allure-report -c
+npx allure open allure-report
 ```
 
 ## 📁 Project Structure
@@ -165,5 +178,7 @@ Log format: `[Timestamp] [Level] [Machine] [User] [ThreadId] Message`
 - **Flaky tests**: Use `[Retry(3)]` attribute
 - **Browser crashes**: Run `dotnet playwright install`
 - **Logs not appearing**: Check `Logs/` directory permissions
+- **`allure`: command not found**: Run `npm install` here and use `npx allure …`, or fix your `PATH` if you installed with `npm install -g … --prefix ~/.local`
+- **`npm install -g` EACCES**: Do not install globals under `/usr` without sudo; use `npm install` in this project and `npx`, or `--prefix ~/.local` as above
 
 For more information, see detailed README at project root.

@@ -56,7 +56,7 @@ A comprehensive, enterprise-grade test automation framework for .NET application
 - Windows 10+
 
 ### Additional Tools (Optional)
-- **Allure CLI** - For report generation (`pacman -S allure` on Arch)
+- **Node.js + npm** - For the Allure Report CLI bundled in `PlaywrightTests/` (`npm install` there). Do **not** use `pacman -S allure` on Arch—that package is an unrelated game, not [Allure Report](https://qameta.io/allure/).
 - **Git** - For version control
 - **Docker** - For containerized test execution
 
@@ -410,8 +410,8 @@ make report
 # Open report in default browser
 make report-open
 
-# View report history
-allure history allure-report
+# View report history (from repo root, after npm install in PlaywrightTests)
+cd PlaywrightTests && ./node_modules/.bin/allure history allure-report
 ```
 
 ### Report Features

@@ -32,7 +32,8 @@ dotnet --version
 
 # (Optional) Install additional tools
 sudo pacman -S git
-sudo pacman -S allure  # For report generation
+# Allure *Report* (test reports): use Node — after framework setup, run `npm install`
+# in PlaywrightTests/ (see PlaywrightTests/README.md). Avoid `pacman -S allure` (unrelated game).
 ```
 
 ### Step 2: Framework Setup

@@ -217,7 +217,7 @@ dotnet test --filter "Name~TestName" --verbosity detailed
 | Browser won't launch | `rm -rf ~/.cache/ms-playwright && dotnet build` |
 | Flaky tests | Use explicit waits instead of `Task.Delay()` |
 | Logs not appearing | Create `Logs/` directory, check permissions |
-| Report not generating | Install Allure: `sudo pacman -S allure` |
+| Report not generating | `cd PlaywrightTests && npm install`, then `npx allure generate …` or `make report` (do **not** use `pacman -S allure` — wrong package) |
 
 ---
 

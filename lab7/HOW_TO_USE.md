@@ -662,22 +662,25 @@ ls -la PlaywrightTests/Screenshots/
 
 ### Issue: Allure report won't generate
 
+Allure Report is **not** the Arch package `allure` (that installs a roguelike game). Use the **Allure Report** CLI from the test project:
+
 ```bash
-# Check if Allure is installed
-allure --version
+cd PlaywrightTests
+npm install   # installs allure-commandline locally; no sudo
 
-# Install Allure (Arch Linux)
-sudo pacman -S allure
-
-# Or install on Mac
-brew install allure
+# Check CLI
+npx allure --version
 
 # Manual generation
-allure generate PlaywrightTests/allure-results -o allure-report --clean
+npx allure generate allure-results -o allure-report --clean
 
 # View
-allure open allure-report
+npx allure open allure-report
 ```
+
+Or from repo root: `make report` / `make report-open` (runs the same local CLI after `npm install` in `PlaywrightTests`).
+
+Global install without touching `/usr`: `npm install -g allure-commandline --prefix ~/.local` and put `~/.local/bin` on `PATH`. On macOS, `brew install allure` installs the correct report tool.
 
 ---
 

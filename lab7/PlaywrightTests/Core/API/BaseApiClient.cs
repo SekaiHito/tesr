@@ -19,10 +19,10 @@ namespace PlaywrightTests.Core.API
         protected readonly HttpClient _httpClient;
         protected readonly string _baseUrl;
 
-        protected BaseApiClient(ILogger logger, string baseUrl = null)
+        protected BaseApiClient(ILogger logger, string? baseUrl = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _baseUrl = baseUrl ?? ConfigManager.Environment.ApiUrl;
+            _baseUrl = (baseUrl ?? ConfigManager.Environment.ApiUrl).TrimEnd('/');
             _httpClient = new HttpClient();
         }
 
@@ -43,7 +43,7 @@ namespace PlaywrightTests.Core.API
         {
             try
             {
-                var url = $"{_baseUrl}/{endpoint}";
+                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
                 _logger.Information("GET request to: {Url}", url);
 
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -67,7 +67,7 @@ namespace PlaywrightTests.Core.API
         {
             try
             {
-                var url = $"{_baseUrl}/{endpoint}";
+                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
                 _logger.Information("POST request to: {Url}", url);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, url);
@@ -98,7 +98,7 @@ namespace PlaywrightTests.Core.API
         {
             try
             {
-                var url = $"{_baseUrl}/{endpoint}";
+                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
                 _logger.Information("PUT request to: {Url}", url);
 
                 var request = new HttpRequestMessage(HttpMethod.Put, url);
@@ -127,7 +127,7 @@ namespace PlaywrightTests.Core.API
         {
             try
             {
-                var url = $"{_baseUrl}/{endpoint}";
+                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
                 _logger.Information("DELETE request to: {Url}", url);
 
                 var request = new HttpRequestMessage(HttpMethod.Delete, url);

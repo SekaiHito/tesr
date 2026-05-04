@@ -160,6 +160,10 @@ restore_dependencies() {
     cd "$SCRIPT_DIR/$PROJECT_NAME"
 
     if dotnet restore; then
+        if command -v npm &> /dev/null && [[ -f "package.json" ]]; then
+            print_info "Installing npm dependencies (Allure Report CLI)..."
+            npm install --no-fund --no-audit || print_warning "npm install failed; run it manually in $PROJECT_NAME for Allure reports"
+        fi
         print_success "Dependencies restored successfully"
         cd - > /dev/null
         return 0
@@ -260,21 +264,28 @@ clean_project() {
 generate_report() {
     print_header "Generating Allure Report"
 
-    if ! command -v allure &> /dev/null; then
-        print_warning "Allure command-line tool is not installed"
-        print_info "To install: sudo pacman -S allure or visit https://docs.qameta.io/allure/"
+    local proj_dir="$SCRIPT_DIR/$PROJECT_NAME"
+    local results_dir="$proj_dir/allure-results"
+
+    if ! command -v npm &> /dev/null; then
+        print_warning "npm is not installed; install Node.js for Allure Report, or see https://docs.qameta.io/allure/"
         return 1
     fi
 
-    if [[ -d "allure-results" ]]; then
-        print_info "Generating report from allure-results..."
-        allure generate allure-results -o allure-report --clean
-        print_success "Allure report generated in allure-report/"
-        return 0
-    else
-        print_warning "No allure-results directory found"
+    if [[ ! -d "$results_dir" ]]; then
+        print_warning "No allure-results directory found at $results_dir"
         return 1
     fi
+
+    if [[ ! -d "$proj_dir/node_modules/allure-commandline" ]]; then
+        print_warning "Allure CLI not installed in project. Run: cd $PROJECT_NAME && npm install"
+        return 1
+    fi
+
+    print_info "Generating report from allure-results..."
+    ( cd "$proj_dir" && ./node_modules/.bin/allure generate allure-results -o allure-report --clean )
+    print_success "Allure report generated in $proj_dir/allure-report/"
+    return 0
 }
 
 ################################################################################
