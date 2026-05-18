@@ -1,8 +1,0 @@
-{
-  "name": "playwrighttests-allure",
-  "private": true,
-  "description": "Local Allure Report CLI (use npx — no global npm install)",
-  "devDependencies": {
-    "allure-commandline": "^2.38.1"
-  }
-}

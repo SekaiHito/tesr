@@ -5,93 +5,64 @@ using Serilog;
 
 namespace PlaywrightTests.Core.API
 {
-    /// <summary>
-    /// Example API client for product-related endpoints.
-    /// </summary>
     public class ProductApiClient : BaseApiClient
     {
-        public ProductApiClient(ILogger logger, string baseUrl = null) : base(logger, baseUrl) { }
+        public ProductApiClient(ILogger logger, string? baseUrl = null) : base(logger, baseUrl) { }
 
         /// <summary>
-        /// Gets all products from API.
+        /// Отримує список товарів. DummyJSON повертає об'єкт з масивом у полі "products".
         /// </summary>
-        public async Task<ApiResponse<List<Product>>> GetProductsAsync()
+        public async Task<ProductListResponse> GetProductsAsync()
         {
-            _logger.Information("Fetching products from API");
-            return await GetAsync<ApiResponse<List<Product>>>("api/products");
+            _logger.Information("Fetching products from DummyJSON");
+            return await GetAsync<ProductListResponse>("products");
         }
 
         /// <summary>
-        /// Gets product by ID.
+        /// Отримує один товар за ID.
         /// </summary>
-        public async Task<ApiResponse<Product>> GetProductByIdAsync(int id)
+        public async Task<Product> GetProductByIdAsync(int id)
         {
-            _logger.Information("Fetching product {ProductId} from API", id);
-            return await GetAsync<ApiResponse<Product>>($"api/products/{id}");
+            _logger.Information("Fetching product {ProductId} from DummyJSON", id);
+            return await GetAsync<Product>($"products/{id}");
         }
 
         /// <summary>
-        /// Creates new product.
+        /// Створює новий товар.
         /// </summary>
-        public async Task<ApiResponse<Product>> CreateProductAsync(CreateProductRequest request)
+        public async Task<Product> CreateProductAsync(CreateProductRequest request)
         {
-            _logger.Information("Creating product: {ProductName}", request.Name);
-            return await PostAsync<ApiResponse<Product>>("api/products", request);
-        }
-
-        /// <summary>
-        /// Updates product.
-        /// </summary>
-        public async Task<ApiResponse<Product>> UpdateProductAsync(int id, UpdateProductRequest request)
-        {
-            _logger.Information("Updating product {ProductId}", id);
-            return await PutAsync<ApiResponse<Product>>($"api/products/{id}", request);
-        }
-
-        /// <summary>
-        /// Deletes product.
-        /// </summary>
-        public async Task<ApiResponse<object>> DeleteProductAsync(int id)
-        {
-            _logger.Information("Deleting product {ProductId}", id);
-            return await DeleteAsync<ApiResponse<object>>($"api/products/{id}");
+            _logger.Information("Creating product: {Title}", request.Title);
+            // У DummyJSON ендпоінт для створення - "products/add"
+            return await PostAsync<Product>("products/add", request);
         }
     }
 
-    // DTOs
+    // --- МОДЕЛІ ДАНИХ (DTOs) ---
+
     public class Product
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public string Title { get; set; } = string.Empty; // В DummyJSON це Title, а не Name
+        public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int Stock { get; set; }
-        public string Category { get; set; }
+        public string Category { get; set; } = string.Empty;
+    }
+
+    public class ProductListResponse
+    {
+        // DummyJSON повертає список у такому форматі
+        public List<Product> Products { get; set; } = new();
+        public int Total { get; set; }
+        public int Skip { get; set; }
+        public int Limit { get; set; }
     }
 
     public class CreateProductRequest
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public string Title { get; set; } = string.Empty;
         public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string Category { get; set; }
-    }
-
-    public class UpdateProductRequest
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string Category { get; set; }
-    }
-
-    public class ApiResponse<T> where T : class
-    {
-        public bool Success { get; set; }
-        public string Message { get; set; }
-        public T Data { get; set; }
-        public int StatusCode { get; set; }
+        // Можна додати інші поля за бажанням
     }
 }

@@ -90,12 +90,13 @@ namespace PlaywrightTests.Config
             string environment = System.Environment.GetEnvironmentVariable("TEST_ENV") ?? "dev";
             string basePath = Directory.GetCurrentDirectory();
 
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"Config/Environments/appsettings.{environment}.json", optional: false, reloadOnChange: true);
+           // У ConfigManager.cs змініть блок ініціалізації:
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory) // ВАЖЛИВО: шукаємо в папці з тестами
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"Config/Environments/appsettings.{environment}.json", optional: true);
 
-            _configuration = builder.Build();
+        _configuration = builder.Build();
 
             // Bind configuration sections
             _playwrightSettings = new PlaywrightSettings();

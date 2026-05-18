@@ -73,21 +73,14 @@ namespace PlaywrightTests.Core.Pages
         /// <summary>
         /// Types text character by character with delay.
         /// </summary>
+        // Знайдіть метод TypeAsync і замініть його вміст:
         public virtual async Task TypeAsync(string locator, string text, int delayMs = 50, int timeoutMs = 0)
         {
             int timeout = timeoutMs > 0 ? timeoutMs : _defaultTimeout;
-            try
-            {
-                _logger.Information("Typing text in: {Locator}", locator);
-                await _waitHelpers.WaitForVisibleAsync(locator, timeout);
-                await _page.Locator(locator).TypeAsync(text, new LocatorTypeOptions { Delay = delayMs });
-                _logger.Debug("Text typed successfully in: {Locator}", locator);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to type text in: {Locator}", locator);
-                throw;
-            }
+            _logger.Information("Typing text in: {Locator}", locator);
+            await _waitHelpers.WaitForVisibleAsync(locator, timeout);
+            // Використовуємо актуальний метод Playwright
+            await _page.Locator(locator).PressSequentiallyAsync(text, new LocatorPressSequentiallyOptions { Delay = delayMs });
         }
 
         /// <summary>

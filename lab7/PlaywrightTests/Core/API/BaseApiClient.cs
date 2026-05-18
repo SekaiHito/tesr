@@ -9,11 +9,7 @@ using PlaywrightTests.Config;
 
 namespace PlaywrightTests.Core.API
 {
-    /// <summary>
-    /// Base class for API client with common HTTP methods and error handling.
-    /// Provides centralized API interaction patterns with logging and retry logic.
-    /// </summary>
-    public abstract class BaseApiClient
+    public abstract class BaseApiClient : IDisposable
     {
         protected readonly ILogger _logger;
         protected readonly HttpClient _httpClient;
@@ -22,13 +18,11 @@ namespace PlaywrightTests.Core.API
         protected BaseApiClient(ILogger logger, string? baseUrl = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _baseUrl = (baseUrl ?? ConfigManager.Environment.ApiUrl).TrimEnd('/');
+            // Тимчасово замініть ConfigManager на пряме посилання:
+            _baseUrl = "https://dummyjson.com"; 
             _httpClient = new HttpClient();
         }
 
-        /// <summary>
-        /// Sets authorization header.
-        /// </summary>
         public void SetAuthorizationHeader(string token)
         {
             _logger.Information("Setting authorization header");
@@ -36,147 +30,76 @@ namespace PlaywrightTests.Core.API
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
 
-        /// <summary>
-        /// Makes GET request.
-        /// </summary>
-        public async Task<T> GetAsync<T>(string endpoint, Dictionary<string, string> headers = null) where T : class
+        public async Task<T> GetAsync<T>(string endpoint, Dictionary<string, string>? headers = null) where T : class
         {
-            try
-            {
-                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
-                _logger.Information("GET request to: {Url}", url);
+            var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
+            _logger.Information("GET request to: {Url}", url);
 
-                var request = new HttpRequestMessage(HttpMethod.Get, url);
-                AddHeaders(request, headers);
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            AddHeaders(request, headers);
 
-                var response = await _httpClient.SendAsync(request);
-                return await HandleResponseAsync<T>(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "GET request failed for endpoint: {Endpoint}", endpoint);
-                throw;
-            }
+            var response = await _httpClient.SendAsync(request);
+            return await HandleResponseAsync<T>(response);
         }
 
-        /// <summary>
-        /// Makes POST request.
-        /// </summary>
-        public async Task<T> PostAsync<T>(string endpoint, object data = null,
-            Dictionary<string, string> headers = null) where T : class
+        public async Task<T> PostAsync<T>(string endpoint, object? data = null, Dictionary<string, string>? headers = null) where T : class
         {
-            try
+            var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
+            _logger.Information("POST request to: {Url}", url);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddHeaders(request, headers);
+
+            if (data != null)
             {
-                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
-                _logger.Information("POST request to: {Url}", url);
-
-                var request = new HttpRequestMessage(HttpMethod.Post, url);
-                AddHeaders(request, headers);
-
-                if (data != null)
-                {
-                    var json = JsonSerializer.Serialize(data);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                    _logger.Debug("POST data: {Data}", json);
-                }
-
-                var response = await _httpClient.SendAsync(request);
-                return await HandleResponseAsync<T>(response);
+                // Додаємо опції, щоб назви полів були camelCase (як того хоче API)
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                var json = JsonSerializer.Serialize(data, options);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
             }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "POST request failed for endpoint: {Endpoint}", endpoint);
-                throw;
-            }
+            var response = await _httpClient.SendAsync(request);
+            return await HandleResponseAsync<T>(response);
         }
 
-        /// <summary>
-        /// Makes PUT request.
-        /// </summary>
-        public async Task<T> PutAsync<T>(string endpoint, object data = null,
-            Dictionary<string, string> headers = null) where T : class
+        public async Task<T> PutAsync<T>(string endpoint, object? data = null, Dictionary<string, string>? headers = null) where T : class
         {
-            try
+            var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
+            var request = new HttpRequestMessage(HttpMethod.Put, url);
+            AddHeaders(request, headers);
+
+            if (data != null)
             {
-                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
-                _logger.Information("PUT request to: {Url}", url);
-
-                var request = new HttpRequestMessage(HttpMethod.Put, url);
-                AddHeaders(request, headers);
-
-                if (data != null)
-                {
-                    var json = JsonSerializer.Serialize(data);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                }
-
-                var response = await _httpClient.SendAsync(request);
-                return await HandleResponseAsync<T>(response);
+                var json = JsonSerializer.Serialize(data);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
             }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "PUT request failed for endpoint: {Endpoint}", endpoint);
-                throw;
-            }
+
+            var response = await _httpClient.SendAsync(request);
+            return await HandleResponseAsync<T>(response);
         }
 
-        /// <summary>
-        /// Makes DELETE request.
-        /// </summary>
-        public async Task<T> DeleteAsync<T>(string endpoint, Dictionary<string, string> headers = null) where T : class
+        public async Task<T> DeleteAsync<T>(string endpoint, Dictionary<string, string>? headers = null) where T : class
         {
-            try
-            {
-                var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
-                _logger.Information("DELETE request to: {Url}", url);
-
-                var request = new HttpRequestMessage(HttpMethod.Delete, url);
-                AddHeaders(request, headers);
-
-                var response = await _httpClient.SendAsync(request);
-                return await HandleResponseAsync<T>(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "DELETE request failed for endpoint: {Endpoint}", endpoint);
-                throw;
-            }
+            var url = $"{_baseUrl}/{endpoint.TrimStart('/')}";
+            var request = new HttpRequestMessage(HttpMethod.Delete, url);
+            AddHeaders(request, headers);
+            var response = await _httpClient.SendAsync(request);
+            return await HandleResponseAsync<T>(response);
         }
 
-        /// <summary>
-        /// Handles HTTP response with error checking.
-        /// </summary>
         protected async Task<T> HandleResponseAsync<T>(HttpResponseMessage response) where T : class
         {
-            try
+            var content = await response.Content.ReadAsStringAsync();
+            _logger.Information("Response status: {StatusCode}", response.StatusCode);
+
+            if (!response.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsStringAsync();
-                _logger.Information("Response status: {StatusCode}", response.StatusCode);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.Error("API error - Status: {StatusCode}, Content: {Content}",
-                        response.StatusCode, content);
-                    throw new HttpRequestException(
-                        $"API request failed with status {response.StatusCode}: {content}");
-                }
-
-                if (string.IsNullOrEmpty(content))
-                    return null;
-
-                return JsonSerializer.Deserialize<T>(content);
+                throw new HttpRequestException($"API failed: {response.StatusCode} - {content}");
             }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Failed to handle response");
-                throw;
-            }
+
+            return JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
         }
 
-        /// <summary>
-        /// Adds headers to request.
-        /// </summary>
-        protected void AddHeaders(HttpRequestMessage request, Dictionary<string, string> headers)
+        protected void AddHeaders(HttpRequestMessage request, Dictionary<string, string>? headers)
         {
             if (headers != null)
             {
@@ -187,12 +110,6 @@ namespace PlaywrightTests.Core.API
             }
         }
 
-        /// <summary>
-        /// Disposes HTTP client.
-        /// </summary>
-        public void Dispose()
-        {
-            _httpClient?.Dispose();
-        }
+        public void Dispose() => _httpClient?.Dispose();
     }
 }

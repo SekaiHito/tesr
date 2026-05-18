@@ -73,7 +73,7 @@ namespace PlaywrightTests.Pages
         /// <summary>
         /// Gets home page title.
         /// </summary>
-        public async Task<string> GetPageTitleAsync()
+        public override async Task<string> GetPageTitleAsync()
         {
             _logger.Information("Getting home page title");
             return await GetTextAsync(_homeTitle);
