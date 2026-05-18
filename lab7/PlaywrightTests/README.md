@@ -182,3 +182,21 @@ Log format: `[Timestamp] [Level] [Machine] [User] [ThreadId] Message`
 - **`npm install -g` EACCES**: Do not install globals under `/usr` without sudo; use `npm install` in this project and `npx`, or `--prefix ~/.local` as above
 
 For more information, see detailed README at project root.
+
+# Автоматизація системного тестування (Playwright + .NET)
+
+Цей репозиторій містить систему автоматизованих UI- та API-тестів, побудовану за допомогою Microsoft Playwright, NUnit та Serilog. Фреймворк підтримує динамічну зміну конфігурацій, кросбраузерність, емуляцію мобільних пристроїв та паралельне виконання.
+
+---
+
+## Інструкція до виконання завдань лабораторної роботи
+
+Усі ключові параметри запуску винесені у файл конфігурації `appsettings.json`, що дозволяє гнучко керувати тестами без зміни самого коду.
+
+### Завдання 1: Мультибраузерний запуск тестів
+Фреймворк підтримує запуск у трьох основних рушіях: Chromium, Firefox та WebKit (Safari). 
+Для перевірки роботи у різних браузерах змініть значення ключа `"BrowserType"` у файлі `appsettings.json` перед запуском:
+
+* **Для Google Chrome / Chromium:**
+  ```json
+  "BrowserType": "chromium"

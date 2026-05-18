@@ -5,6 +5,9 @@ using NUnit.Framework;
 using PlaywrightTests.Config;
 using PlaywrightTests.Pages;
 
+[assembly: Parallelizable(ParallelScope.Children)]
+[assembly: LevelOfParallelism(3)]
+
 namespace PlaywrightTests.Tests.UI
 {
     [TestFixture]
